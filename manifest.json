@@ -1,7 +1,7 @@
 {
-  "name": "GitHub 链接管家",
-  "short_name": "GitHub管家",
-  "description": "管理您的 GitHub 仓库链接，支持备份、导入导出、二维码分享",
+  "name": "链接管家",
+  "short_name": "链接管家",
+  "description": "管理您的网页链接，支持备份、导入导出、二维码分享",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
