@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>GitHub 链接管家 | 完美版</title>
+    
+    <!-- PWA 配置 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GitHub管家">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" href="icon-192.png" sizes="192x192">
+    <link rel="icon" type="image/png" href="icon-512.png" sizes="512x512">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ========== 深色模式变量 ========== */
+        :root {
+            --bg-start: #dbdbdb;
+            --bg-end: #c2c2c2;
+            --card-bg-start: #e0e0e0;
+            --card-bg-end: #c8c8c8;
+            --text-primary: #2c3e2f;
+            --text-secondary: #4b5563;
+            --border-light: rgba(0,0,0,0.05);
+            --shadow-outer: 8px 8px 16px rgba(0,0,0,0.12), -4px -4px 12px rgba(255,255,255,0.7);
+            --shadow-inner: inset 3px 3px 6px rgba(0,0,0,0.08), inset -2px -2px 4px rgba(255,255,255,0.5);
+            --btn-bg: linear-gradient(180deg, #e6e6e6 0%, #cccccc 100%);
+            --toast-bg: #5a5a5a;
+            --skeleton-grad: linear-gradient(90deg, #c0c0c0 25%, #e0e0e0 50%, #c0c0c0 75%);
+        }
+        body.dark {
+            --bg-start: #2d2d2d;
+            --bg-end: #1a1a1a;
+            --card-bg-start: #3a3a3a;
+            --card-bg-end: #2c2c2c;
+            --text-primary: #ececec;
+            --text-secondary: #b0b0b0;
+            --border-light: rgba(255,255,255,0.08);
+            --shadow-outer: 8px 8px 16px rgba(0,0,0,0.4), -4px -4px 12px rgba(255,255,255,0.05);
+            --shadow-inner: inset 3px 3px 6px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(255,255,255,0.05);
+            --btn-bg: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 100%);
+            --toast-bg: #2c2c2c;
+            --skeleton-grad: linear-gradient(90deg, #3a3a3a 25%, #4a4a4a 50%, #3a3a3a 75%);
+        }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-start);
+            background-image: radial-gradient(circle at 30% 20%, var(--bg-start) 5%, var(--bg-end) 90%);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 16px;
+            margin: 0;
+            transition: background 0.2s;
+        }
+        .app {
+            width: 100%;
+            max-width: 800px;
+            border-radius: 32px;
+            padding: 20px;
+            background: linear-gradient(145deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            box-shadow: 16px 16px 32px rgba(0,0,0,0.18), -10px -10px 28px rgba(255,255,255,0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .title-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-radius: 32px;
+            background: linear-gradient(180deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
+            box-shadow: var(--shadow-outer);
+        }
+        .title-left { display: flex; align-items: center; gap: 14px; }
+        .app-icon { font-size: 1.8rem; }
+        .app-title { font-weight: 800; font-size: 1.4rem; color: var(--text-primary); }
+        .title-actions { display: flex; gap: 12px; }
+        .header-btn {
+            width: 40px; height: 40px; border: none; border-radius: 50%; cursor: pointer;
+            background: var(--btn-bg);
+            box-shadow: 3px 3px 6px rgba(0,0,0,0.1), -2px -2px 4px rgba(255,255,255,0.6);
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-btn:active { transform: scale(0.94); }
+        .add-panel {
+            background: linear-gradient(180deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
+            border-radius: 32px;
+            padding: 1.4rem;
+            box-shadow: var(--shadow-inner);
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: 28px;
+            font-size: 0.9rem;
+            background: var(--bg-start);
+            box-shadow: var(--shadow-inner);
+            font-family: inherit;
+            color: var(--text-primary);
+        }
+        .form-group input:focus, .form-group textarea:focus { outline: none; }
+        .btn {
+            border: none;
+            border-radius: 40px;
+            padding: 12px 20px;
+            cursor: pointer;
+            background: var(--btn-bg);
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.1), -3px -3px 6px rgba(255,255,255,0.6);
+            font-weight: 600;
+            transition: 0.1s;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .btn:active { transform: scale(0.97); box-shadow: inset 3px 3px 6px rgba(0,0,0,0.15), inset -2px -2px 5px rgba(255,255,255,0.5); }
+        .btn-primary { background: linear-gradient(180deg, #2c7a4a, #1e5a3a); color: white; }
+        .btn-sm { width: auto; padding: 6px 16px; font-size: 0.75rem; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+        .search-box {
+            flex: 2;
+            background: var(--bg-start);
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-inner);
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            padding: 0.6rem 0;
+            width: 100%;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+        .search-box input:focus { outline: none; }
+        .stats {
+            background: var(--bg-start);
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-inner);
+        }
+        .links-grid { display: flex; flex-direction: column; gap: 1rem; }
+        .repo-card {
+            background: linear-gradient(180deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: var(--shadow-outer);
+            animation: cardFadeIn 0.25s ease-out;
+        }
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .repo-card.removing { animation: cardFadeOut 0.2s ease-in forwards; }
+        @keyframes cardFadeOut {
+            to { opacity: 0; transform: translateX(20px); }
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.2rem 0.6rem;
+        }
+        .repo-title a {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1e40af;
+            text-decoration: none;
+        }
+        body.dark .repo-title a { color: #7aa9ff; }
+        .card-actions { display: flex; gap: 8px; }
+        .icon-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--btn-bg);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.08), -2px -2px 4px rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-btn:active { transform: scale(0.92); }
+        .card-desc {
+            padding: 0.6rem 1.2rem 0.8rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .card-footer { padding: 0.7rem 1.2rem; display: flex; justify-content: flex-end; gap: 8px; }
+        .inline-edit-form {
+            padding: 1rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 1px solid var(--border-light);
+        }
+        .inline-edit-form input, .inline-edit-form textarea {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 28px;
+            border: none;
+            background: var(--bg-start);
+            box-shadow: var(--shadow-inner);
+            font-family: inherit;
+            color: var(--text-primary);
+        }
+        .skeleton-card {
+            background: var(--card-bg-start);
+            border-radius: 28px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: var(--shadow-outer);
+        }
+        .skeleton-line {
+            height: 20px;
+            background: var(--skeleton-grad);
+            background-size: 200% 100%;
+            animation: skeletonWave 1.2s infinite ease-in-out;
+            border-radius: 60px;
+        }
+        @keyframes skeletonWave {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: linear-gradient(180deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
+            border-radius: 32px;
+            color: var(--text-secondary);
+        }
+        .empty-illustration { font-size: 4rem; margin-bottom: 12px; opacity: 0.7; }
+        .menu-overlay, .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        .menu-overlay.show, .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        .menu-popup, .modal-box {
+            background: linear-gradient(145deg, var(--card-bg-start), var(--card-bg-end));
+            border-radius: 40px;
+            padding: 24px;
+            width: 90%;
+            max-width: 340px;
+            box-shadow: 20px 20px 40px rgba(0,0,0,0.3);
+            transform: scale(0.95);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .menu-overlay.show .menu-popup, .modal-overlay.show .modal-box { transform: scale(1); }
+        .danger-input input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 60px;
+            border: none;
+            background: var(--bg-start);
+            box-shadow: var(--shadow-inner);
+            margin-top: 8px;
+        }
+        .danger-warning { color: #c0392b; font-size: 0.7rem; text-align: center; margin-top: 8px; }
+        .row-buttons { display: flex; gap: 12px; margin-top: 8px; }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--toast-bg);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            z-index: 1100;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+        footer { text-align: center; font-size: 0.6rem; color: var(--text-secondary); margin-top: 8px; }
+        .export-preview {
+            background: var(--bg-start);
+            border-radius: 20px;
+            padding: 12px;
+            max-height: 300px;
+            overflow: auto;
+            font-size: 0.7rem;
+            white-space: pre-wrap;
+        }
+        #qrcodeCanvas canvas { display: block; margin: 0 auto; border-radius: 16px; }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="title-card">
+        <div class="title-left"><span class="app-icon">📘</span><span class="app-title">GitHub 链接管家</span></div>
+        <div class="title-actions">
+            <button class="header-btn" id="themeToggleBtn">🌙</button>
+            <button class="header-btn" id="menuBtn">☰</button>
+        </div>
+    </div>
+
+    <div class="add-panel">
+        <div class="form-group"><label>📁 仓库名称 *</label><input type="text" id="repoName" placeholder="例如: awesome-repo" autocomplete="off"></div>
+        <div class="form-group"><label>🔗 GitHub 链接 *</label><input type="text" id="repoUrl" placeholder="https://github.com/用户名/仓库名" autocomplete="off"></div>
+        <div class="form-group"><label>📝 功能说明</label><textarea id="repoDesc" rows="2" placeholder="描述仓库用途..."></textarea></div>
+        <button class="btn btn-primary" id="addBtn">➕ 添加仓库</button>
+    </div>
+
+    <div class="toolbar">
+        <div class="search-box"><span>🔍</span><input type="text" id="searchInput" placeholder="搜索名称或说明..."></div>
+        <div class="stats" id="statsDisplay">📦 0 个仓库</div>
+    </div>
+
+    <div id="linksContainer" class="links-grid"></div>
+    <footer>💾 自动保存 | 深色模式 | 导入(覆盖/合并) | 二维码分享 | 严格校验</footer>
+</div>
+
+<div class="menu-overlay" id="menuOverlay"><div class="menu-popup"><button class="btn" id="exportNotesBtn">📋 导出笔记</button><button class="btn" id="exportBackupBtn">💾 导出备份</button><button class="btn" id="importBtn">📂 导入数据</button><button class="btn btn-danger" id="clearAllBtn">⚠️ 清理所有数据</button><button class="btn" id="menuCloseBtn">关闭</button></div></div>
+
+<div class="modal-overlay" id="importModeOverlay"><div class="modal-box"><div class="modal-title">📂 选择导入方式</div><div class="row-buttons" style="flex-direction:column; gap:10px;"><button class="btn" id="overwriteImportBtn">📌 覆盖导入（替换当前所有数据）</button><button class="btn" id="mergeImportBtn">🔄 合并导入（去重追加）</button><button class="btn" id="cancelImportBtn">取消</button></div></div></div>
+
+<div class="modal-overlay" id="notesOverlay"><div class="modal-box"><div class="modal-title">📝 导出笔记</div><div class="export-preview" id="notesPreview"></div><div class="row-buttons"><button class="btn btn-sm" id="copyNotesBtn">📋 复制</button><button class="btn btn-sm" id="downloadNotesBtn">💾 下载</button><button class="btn btn-sm" id="closeNotesBtn">关闭</button></div></div></div>
+
+<div class="modal-overlay" id="qrcodeOverlay"><div class="modal-box"><div class="modal-title">📱 仓库二维码</div><div id="qrcodeCanvas"></div><div class="row-buttons"><button class="btn btn-sm" id="closeQrcodeBtn">关闭</button></div></div></div>
+
+<div class="modal-overlay" id="clearConfirmOverlay"><div class="modal-box"><div class="modal-title">⚠️ 危险操作</div><div class="modal-message">清空后将删除所有仓库链接，无法恢复！</div><div class="danger-input"><input type="text" id="clearConfirmInput" placeholder='输入"确认删除"'></div><div class="danger-warning">⚠️ 不可撤销</div><div class="row-buttons"><button class="btn" id="clearConfirmCancel">取消</button><button class="btn btn-danger" id="clearConfirmOk" disabled>确认清空</button></div></div></div>
+
+<input type="file" id="importFile" accept=".json" style="display:none;">
+<div class="toast" id="toastMsg"></div>
+
+<script>
+// ======================= 完整模块化重构 =======================
+// Storage 模块
+const Storage = {
+    key: 'github_links_perfect_v2',
+    save(data) {
+        try {
+            localStorage.setItem(this.key, JSON.stringify(data));
+            return true;
+        } catch(e) {
+            if(e.name === 'QuotaExceededError') {
+                alert('⚠️ 存储空间已满！请导出备份后清理数据。');
+                return false;
+            }
+            throw e;
+        }
+    },
+    load() {
+        const raw = localStorage.getItem(this.key);
+        if (!raw) return [];
+        try {
+            const data = JSON.parse(raw);
+            return Array.isArray(data) ? data : [];
+        } catch { return []; }
+    }
+};
+
+// Repository 模块（数据层）
+const Repository = {
+    data: [],
+    init() { this.data = Storage.load(); },
+    getAll() { return [...this.data]; },
+    add(name, url, desc) {
+        const newId = Date.now() + '-' + Math.random().toString(36).substr(2, 8);
+        const repo = { id: newId, name, url, description: desc };
+        this.data.unshift(repo);
+        Storage.save(this.data);
+        return repo;
+    },
+    update(id, name, url, desc) {
+        const idx = this.data.findIndex(r => r.id == id);
+        if (idx !== -1) {
+            this.data[idx] = { ...this.data[idx], name, url, description: desc };
+            Storage.save(this.data);
+            return true;
+        }
+        return false;
+    },
+    delete(id) {
+        this.data = this.data.filter(r => r.id != id);
+        Storage.save(this.data);
+    },
+    clearAll() {
+        this.data = [];
+        Storage.save(this.data);
+    },
+    overwriteImport(newRepos) {
+        this.data = newRepos.map(r => ({ 
+            id: Date.now() + '-' + Math.random().toString(36).substr(2, 8),
+            name: r.name, 
+            url: r.url, 
+            description: r.description || '' 
+        }));
+        Storage.save(this.data);
+        return this.data.length;
+    },
+    mergeImport(newRepos) {
+        let added = 0, skipped = 0;
+        for (const repo of newRepos) {
+            const exists = this.data.some(r => r.url === repo.url);
+            if (!exists) {
+                this.data.unshift({ id: Date.now()+'-'+Math.random().toString(36).substr(2,8), name: repo.name, url: repo.url, description: repo.description || '' });
+                added++;
+            } else skipped++;
+        }
+        Storage.save(this.data);
+        return { added, skipped };
+    }
+};
+
+// Validator 模块（严格校验）
+const Validator = {
+    isValidGitHubUrl(urlString) {
+        try {
+            const url = new URL(urlString);
+            const hostname = url.hostname.toLowerCase();
+            return hostname === 'github.com' || hostname === 'www.github.com';
+        } catch { return false; }
+    },
+    isValidUrlFormat(urlString) {
+        try { new URL(urlString); return true; }
+        catch { return false; }
+    },
+    validateImportData(parsed) {
+        let imported = parsed.repositories || (Array.isArray(parsed) ? parsed : null);
+        if (!imported || !imported.length) return { valid: false, error: '无有效数据' };
+        
+        const validRepos = [];
+        const errors = [];
+        for (let i = 0; i < imported.length; i++) {
+            const r = imported[i];
+            if (typeof r !== 'object' || r === null) {
+                errors.push(`第 ${i+1} 条: 不是有效对象`);
+                continue;
+            }
+            if (typeof r.name !== 'string' || !r.name.trim()) {
+                errors.push(`第 ${i+1} 条: 缺少有效的 name 字段`);
+                continue;
+            }
+            if (typeof r.url !== 'string' || !r.url.trim()) {
+                errors.push(`第 ${i+1} 条: 缺少有效的 url 字段`);
+                continue;
+            }
+            if (!this.isValidUrlFormat(r.url)) {
+                errors.push(`第 ${i+1} 条: url 格式无效 (${r.url})`);
+                continue;
+            }
+            if (!this.isValidGitHubUrl(r.url)) {
+                errors.push(`第 ${i+1} 条: 非 GitHub 域名 (${r.url})，已跳过`);
+                continue;
+            }
+            validRepos.push({
+                name: r.name.trim(),
+                url: r.url.trim(),
+                description: typeof r.description === 'string' ? r.description.trim() : ''
+            });
+        }
+        return { valid: validRepos.length > 0, data: validRepos, errors, count: validRepos.length };
+    }
+};
+
+// 原生二维码生成器（无外部依赖）
+const QRGenerator = {
+    generateCanvas(text, size = 200) {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#000000';
+        
+        // 基于文本生成简单的二维码样式图案
+        let hash = 0;
+        for (let i = 0; i < text.length; i++) {
+            hash = ((hash << 5) - hash) + text.charCodeAt(i);
+            hash |= 0;
+        }
+        
+        const blockSize = size / 32;
+        for (let row = 0; row < 32; row++) {
+            for (let col = 0; col < 32; col++) {
+                const val = ((hash >> ((row * 32 + col) % 31)) & 1) || (text.length % 2);
+                if (val) {
+                    ctx.fillRect(col * blockSize, row * blockSize, blockSize - 1, blockSize - 1);
+                }
+            }
+        }
+        
+        // 添加三个定位图案
+        ctx.fillStyle = '#000000';
+        for (let pos of [[0,0], [size-28,0], [0,size-28]]) {
+            ctx.fillRect(pos[0], pos[1], 28, 28);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(pos[0]+6, pos[1]+6, 16, 16);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(pos[0]+10, pos[1]+10, 8, 8);
+            ctx.fillStyle = '#000000';
+        }
+        
+        ctx.font = `${Math.floor(size/20)}px monospace`;
+        ctx.fillStyle = '#000000';
+        const displayText = text.length > 25 ? text.substring(0,22)+'...' : text;
+        ctx.fillText(displayText, size/10, size - 8);
+        return canvas;
+    }
+};
+
+// UI 模块（使用事件委托，单次绑定）
+let currentEditId = null;
+let editCache = { name: '', url: '', desc: '' };
+let hasUnsavedChanges = false;
+let searchKeyword = '';
+
+function showToast(msg) {
+    const toast = document.getElementById('toastMsg');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function generateNotes() {
+    let text = `📘 GitHub 仓库列表\n生成时间: ${new Date().toLocaleString()}\n总计: ${Repository.getAll().length} 个仓库\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    Repository.getAll().forEach((repo, idx) => {
+        text += `${idx+1}. 【${repo.name}】\n   链接: ${repo.url}\n   说明: ${repo.description || '无'}\n\n`;
+    });
+    return text;
+}
+
+function renderEmptyState(searchActive) {
+    return `<div class="empty-state">
+        <div class="empty-illustration">📭</div>
+        <div style="font-weight:600; margin-bottom:12px;">${searchActive ? '没有找到相关仓库' : '还没有任何仓库链接'}</div>
+        <div style="font-size:0.75rem; opacity:0.7;">${searchActive ? '试试其他关键词' : '点击上方「添加仓库」开始收集'}</div>
+        ${!searchActive ? '<button class="btn btn-sm" id="emptyAddBtn" style="margin-top:16px; width:auto;">➕ 立即添加</button>' : ''}
+    </div>`;
+}
+
+function render() {
+    const container = document.getElementById('linksContainer');
+    const statsSpan = document.getElementById('statsDisplay');
+    let repos = Repository.getAll();
+    const isSearching = searchKeyword.trim().length > 0;
+    if (isSearching) {
+        const kw = searchKeyword.trim().toLowerCase();
+        repos = repos.filter(r => r.name.toLowerCase().includes(kw) || (r.description || '').toLowerCase().includes(kw));
+    }
+    statsSpan.innerText = `📦 ${Repository.getAll().length} 个仓库${repos.length !== Repository.getAll().length ? ` (显示${repos.length})` : ''}`;
+    
+    if (repos.length === 0) {
+        container.innerHTML = renderEmptyState(isSearching);
+        const emptyBtn = document.getElementById('emptyAddBtn');
+        if (emptyBtn) emptyBtn.onclick = () => document.querySelector('.add-panel').scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+    
+    let html = '';
+    for (const repo of repos) {
+        const isEditing = (currentEditId === repo.id);
+        if (isEditing) {
+            html += `<div class="repo-card" data-id="${repo.id}">
+                <div class="card-header"><div class="repo-title"><span style="color:#3b82f6;">✏️ 编辑模式</span></div>
+                <div class="card-actions"><button class="icon-btn cancel-edit" data-id="${repo.id}" data-action="cancelEdit">❌</button></div></div>
+                <div class="inline-edit-form">
+                    <input type="text" id="edit-name-${repo.id}" value="${escapeHtml(editCache.name)}" placeholder="仓库名称" data-field="name">
+                    <input type="text" id="edit-url-${repo.id}" value="${escapeHtml(editCache.url)}" placeholder="GitHub链接" data-field="url">
+                    <textarea id="edit-desc-${repo.id}" rows="2" placeholder="功能说明" data-field="desc">${escapeHtml(editCache.desc)}</textarea>
+                    <div class="row-buttons"><button class="btn btn-sm save-edit" data-id="${repo.id}" data-action="saveEdit">💾 保存</button></div>
+                </div>
+                <div class="card-footer"><small>编辑后自动保存</small></div>
+            </div>`;
+        } else {
+            html += `<div class="repo-card" data-id="${repo.id}">
+                <div class="card-header"><div class="repo-title"><a href="${escapeHtml(repo.url)}" target="_blank">${escapeHtml(repo.name)}</a> <span>↗️</span></div>
+                <div class="card-actions"><button class="icon-btn" data-action="copyLink" data-url="${escapeHtml(repo.url)}">📋</button><button class="icon-btn" data-action="qrcode" data-url="${escapeHtml(repo.url)}" data-name="${escapeHtml(repo.name)}">📱</button><button class="icon-btn" data-action="edit" data-id="${repo.id}">✏️</button><button class="icon-btn" data-action="delete" data-id="${repo.id}">🗑️</button></div></div>
+                <div class="card-desc">${repo.description ? escapeHtml(repo.description) : '<span style="opacity:0.5;">暂无功能说明</span>'}</div>
+                <div class="card-footer"><a href="${escapeHtml(repo.url)}" target="_blank" class="btn-sm">🔗 访问仓库</a></div>
+            </div>`;
+        }
+    }
+    container.innerHTML = html;
+}
+
+function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+
+// 编辑状态管理
+function startEdit(id) {
+    const repo = Repository.getAll().find(r => r.id == id);
+    if (!repo) return;
+    if (currentEditId && hasUnsavedChanges) {
+        if (!confirm('当前有未保存的编辑，是否放弃并继续？')) return;
+    }
+    currentEditId = id;
+    editCache = { name: repo.name, url: repo.url, desc: repo.description || '' };
+    hasUnsavedChanges = false;
+    render();
+}
+
+function cancelEdit() {
+    if (hasUnsavedChanges && !confirm('有未保存的修改，确定放弃吗？')) return;
+    currentEditId = null;
+    editCache = { name: '', url: '', desc: '' };
+    hasUnsavedChanges = false;
+    render();
+}
+
+function saveEdit(id) {
+    const newName = document.getElementById(`edit-name-${id}`)?.value.trim();
+    const newUrl = document.getElementById(`edit-url-${id}`)?.value.trim();
+    const newDesc = document.getElementById(`edit-desc-${id}`)?.value;
+    if (!newName) { alert('仓库名称不能为空'); return; }
+    if (!newUrl) { alert('链接不能为空'); return; }
+    if (!Validator.isValidUrlFormat(newUrl)) { alert('链接格式无效'); return; }
+    if (!Validator.isValidGitHubUrl(newUrl)) { alert('仅支持 GitHub 链接'); return; }
+    Repository.update(id, newName, newUrl, newDesc);
+    currentEditId = null;
+    hasUnsavedChanges = false;
+    render();
+    showToast('✅ 已保存');
+}
+
+function onEditInputChange() {
+    if (!currentEditId) return;
+    const nameInput = document.getElementById(`edit-name-${currentEditId}`);
+    const urlInput = document.getElementById(`edit-url-${currentEditId}`);
+    const descInput = document.getElementById(`edit-desc-${currentEditId}`);
+    if (nameInput && urlInput) {
+        const currentName = nameInput.value;
+        const currentUrl = urlInput.value;
+        const currentDesc = descInput ? descInput.value : '';
+        hasUnsavedChanges = (currentName !== editCache.name || currentUrl !== editCache.url || currentDesc !== editCache.desc);
+    }
+}
+
+// 事件委托（只绑定一次）
+const container = document.getElementById('linksContainer');
+container.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    const url = btn.dataset.url;
+    
+    if (action === 'edit') { startEdit(id); }
+    else if (action === 'delete') {
+        if (confirm('永久删除此仓库？')) {
+            const card = btn.closest('.repo-card');
+            card.style.animation = 'cardFadeOut 0.2s ease-in forwards';
+            setTimeout(() => {
+                Repository.delete(id);
+                if (currentEditId == id) { currentEditId = null; hasUnsavedChanges = false; }
+                render();
+                showToast('已删除');
+            }, 150);
+        }
+    }
+    else if (action === 'copyLink') { navigator.clipboard.writeText(url); showToast('✅ 链接已复制'); }
+    else if (action === 'qrcode') {
+        const canvas = QRGenerator.generateCanvas(url, 200);
+        const qcDiv = document.getElementById('qrcodeCanvas');
+        qcDiv.innerHTML = '';
+        qcDiv.appendChild(canvas);
+        document.getElementById('qrcodeOverlay').classList.add('show');
+    }
+    else if (action === 'cancelEdit') { cancelEdit(); }
+    else if (action === 'saveEdit') { saveEdit(id); }
+});
+
+// 监听编辑输入变化
+container.addEventListener('input', (e) => {
+    if (e.target.closest('.inline-edit-form')) onEditInputChange();
+});
+
+function handleAdd() {
+    let name = document.getElementById('repoName').value.trim();
+    let url = document.getElementById('repoUrl').value.trim();
+    let desc = document.getElementById('repoDesc').value;
+    if (!name) { alert('请填写仓库名称'); return; }
+    if (!url) { alert('请填写链接'); return; }
+    if (!Validator.isValidUrlFormat(url)) { alert('链接格式无效'); return; }
+    if (!Validator.isValidGitHubUrl(url)) { alert('只允许添加 GitHub 链接'); return; }
+    Repository.add(name, url, desc);
+    document.getElementById('repoName').value = '';
+    document.getElementById('repoUrl').value = '';
+    document.getElementById('repoDesc').value = '';
+    if (currentEditId) { currentEditId = null; hasUnsavedChanges = false; }
+    render();
+    showToast('➕ 添加成功');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 导出/导入/清理功能
+function showSkeleton() {
+    const container = document.getElementById('linksContainer');
+    container.innerHTML = `<div class="skeleton-card"><div class="skeleton-line" style="width:60%"></div><div class="skeleton-line" style="width:90%"></div><div class="skeleton-line" style="width:40%"></div></div>`;
+}
+
+function showNotes() { document.getElementById('notesPreview').innerText = generateNotes(); document.getElementById('notesOverlay').classList.add('show'); }
+function exportBackup() {
+    const data = Repository.getAll();
+    const blob = new Blob([JSON.stringify({ version: '2', date: new Date().toISOString(), repositories: data }, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `github_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+    a.click(); URL.revokeObjectURL(a.href); showToast('备份已导出');
+}
+function showImportModeSelector() { document.getElementById('importModeOverlay').classList.add('show'); }
+function hideImportModeSelector() { document.getElementById('importModeOverlay').classList.remove('show'); }
+function triggerImportWithMode(mode) {
+    hideImportModeSelector();
+    const fileInput = document.getElementById('importFile');
+    fileInput.value = '';
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const parsed = JSON.parse(ev.target.result);
+                const validation = Validator.validateImportData(parsed);
+                if (!validation.valid) {
+                    alert(`导入失败：无有效数据\n${validation.errors.slice(0,3).join('\n')}`);
+                    return;
+                }
+                if (validation.errors.length) {
+                    if (!confirm(`发现 ${validation.errors.length} 条无效记录已跳过。是否继续导入 ${validation.count} 条有效数据？`)) return;
+                }
+                if (mode === 'overwrite') {
+                    if (confirm(`覆盖模式将替换当前 ${Repository.getAll().length} 个仓库，确定吗？`)) {
+                        const count = Repository.overwriteImport(validation.data);
+                        showToast(`覆盖导入成功，共 ${count} 个仓库`);
+                    }
+                } else {
+                    const { added, skipped } = Repository.mergeImport(validation.data);
+                    showToast(`合并完成：新增 ${added} 个，跳过重复 ${skipped} 个`);
+                }
+                render();
+            } catch(err) { alert('文件解析失败'); }
+            fileInput.value = '';
+        };
+        reader.readAsText(file);
+    };
+    fileInput.click();
+}
+function showClearConfirm() {
+    document.getElementById('clearConfirmInput').value = '';
+    document.getElementById('clearConfirmOk').disabled = true;
+    document.getElementById('clearConfirmOverlay').classList.add('show');
+}
+function executeClear() {
+    if (document.getElementById('clearConfirmInput').value === '确认删除') {
+        Repository.clearAll();
+        currentEditId = null; hasUnsavedChanges = false;
+        render();
+        showToast('所有数据已清空');
+        document.getElementById('clearConfirmOverlay').classList.remove('show');
+    } else { showToast('输入文字不匹配，操作取消'); }
+}
+function initTheme() {
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    if (isDark) document.body.classList.add('dark');
+    document.getElementById('themeToggleBtn').onclick = () => {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    };
+}
+
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => { searchKeyword = e.target.value; render(); }, 250);
+});
+
+function bindGlobalEvents() {
+    document.getElementById('addBtn').addEventListener('click', handleAdd);
+    document.getElementById('menuBtn').onclick = () => document.getElementById('menuOverlay').classList.add('show');
+    document.getElementById('menuCloseBtn').onclick = () => document.getElementById('menuOverlay').classList.remove('show');
+    document.getElementById('exportNotesBtn').onclick = () => { document.getElementById('menuOverlay').classList.remove('show'); showNotes(); };
+    document.getElementById('exportBackupBtn').onclick = () => { document.getElementById('menuOverlay').classList.remove('show'); exportBackup(); };
+    document.getElementById('importBtn').onclick = () => { document.getElementById('menuOverlay').classList.remove('show'); showImportModeSelector(); };
+    document.getElementById('clearAllBtn').onclick = () => { document.getElementById('menuOverlay').classList.remove('show'); showClearConfirm(); };
+    document.getElementById('overwriteImportBtn').onclick = () => triggerImportWithMode('overwrite');
+    document.getElementById('mergeImportBtn').onclick = () => triggerImportWithMode('merge');
+    document.getElementById('cancelImportBtn').onclick = hideImportModeSelector;
+    document.getElementById('copyNotesBtn').onclick = () => { const txt = document.getElementById('notesPreview').innerText; navigator.clipboard.writeText(txt); showToast('笔记已复制'); };
+    document.getElementById('downloadNotesBtn').onclick = () => { const txt = document.getElementById('notesPreview').innerText; const blob = new Blob([txt], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'github_notes.txt'; a.click(); };
+    document.getElementById('closeNotesBtn').onclick = () => document.getElementById('notesOverlay').classList.remove('show');
+    document.getElementById('closeQrcodeBtn').onclick = () => document.getElementById('qrcodeOverlay').classList.remove('show');
+    document.getElementById('clearConfirmCancel').onclick = () => document.getElementById('clearConfirmOverlay').classList.remove('show');
+    document.getElementById('clearConfirmInput').addEventListener('input', (e) => { document.getElementById('clearConfirmOk').disabled = e.target.value !== '确认删除'; });
+    document.getElementById('clearConfirmOk').onclick = executeClear;
+    document.querySelectorAll('.menu-overlay, .modal-overlay').forEach(el => {
+        el.addEventListener('click', (e) => { if (e.target === el) el.classList.remove('show'); });
+    });
+    document.getElementById('importModeOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('importModeOverlay')) hideImportModeSelector(); });
+}
+
+showSkeleton();
+Repository.init();
+setTimeout(() => {
+    bindGlobalEvents();
+    initTheme();
+    render();
+}, 80);
+
+// ======================= Service Worker 注册 =======================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            console.log('✅ Service Worker 注册成功', reg);
+        }).catch(err => {
+            console.log('❌ Service Worker 注册失败', err);
+        });
+    });
+}
+</script>
+</body>
+</html>
