@@ -81,7 +81,6 @@
             justify-content: center;
         }
         .header-btn:active { transform: scale(0.94); box-shadow: inset 3px 3px 6px rgba(0,0,0,0.15), inset -2px -2px 5px rgba(255,255,255,0.5); }
-        /* 添加分类按钮 */
         .add-category-btn {
             background: var(--btn-bg);
             box-shadow: var(--shadow-outer);
@@ -94,7 +93,6 @@
             margin-top: 8px;
         }
         .add-category-btn:active { transform: scale(0.97); box-shadow: inset 3px 3px 8px rgba(0,0,0,0.15), inset -2px -2px 5px rgba(255,255,255,0.5); }
-        /* 分类卡片 */
         .category-card {
             background: linear-gradient(180deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
             border-radius: 28px;
@@ -103,13 +101,8 @@
             margin-bottom: 16px;
             transition: box-shadow 0.2s;
         }
-        .category-card.dragging {
-            opacity: 0.4;
-            cursor: grabbing;
-        }
-        .category-card.drag-over {
-            box-shadow: 0 0 0 2px #3b82f6, var(--shadow-outer);
-        }
+        .category-card.dragging { opacity: 0.4; }
+        .category-card.drag-over { box-shadow: 0 0 0 2px #3b82f6, var(--shadow-outer); }
         .category-header {
             display: flex;
             align-items: center;
@@ -132,7 +125,6 @@
             opacity: 0.5;
             padding: 4px 8px;
             border-radius: 20px;
-            transition: transform 0.2s;
             user-select: none;
         }
         .collapse-btn:active { transform: scale(0.9); }
@@ -165,17 +157,8 @@
         }
         .icon-btn:active { transform: scale(0.92); box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1); }
         .category-card.collapsed .category-body { display: none; }
-        .category-body {
-            padding: 0 16px 16px;
-            border-top: 1px solid var(--border-light);
-        }
-        /* 链接列表 */
-        .links-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
+        .category-body { padding: 0 16px 16px; border-top: 1px solid var(--border-light); }
+        .links-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
         .link-item {
             display: flex;
             align-items: center;
@@ -186,12 +169,8 @@
             box-shadow: var(--shadow-inner);
             transition: box-shadow 0.2s;
         }
-        .link-item.dragging {
-            opacity: 0.4;
-        }
-        .link-item.drag-over {
-            box-shadow: 0 0 0 2px #3b82f6, var(--shadow-inner);
-        }
+        .link-item.dragging { opacity: 0.4; }
+        .link-item.drag-over { box-shadow: 0 0 0 2px #3b82f6, var(--shadow-inner); }
         .link-drag-handle {
             cursor: grab;
             font-size: 0.9rem;
@@ -204,22 +183,22 @@
             flex: 1;
             min-width: 0;
         }
-        .link-name {
+        .link-name a {
             font-weight: 700;
             font-size: 0.85rem;
-            color: var(--text-primary);
+            color: #1e40af;
+            text-decoration: none;
             word-break: break-word;
+            display: inline-block;
         }
+        .link-name a:active { opacity: 0.7; }
+        body.dark .link-name a { color: #7aa9ff; }
         .link-url {
             font-size: 0.65rem;
             color: var(--text-secondary);
             word-break: break-all;
         }
-        .link-actions {
-            display: flex;
-            gap: 6px;
-            flex-shrink: 0;
-        }
+        .link-actions { display: flex; gap: 6px; flex-shrink: 0; }
         .btn-sm-icon {
             width: 28px;
             height: 28px;
@@ -249,20 +228,8 @@
             box-shadow: var(--shadow-inner);
         }
         .add-link-btn:active { transform: scale(0.97); box-shadow: inset 3px 3px 6px rgba(0,0,0,0.1); }
-        .empty-links {
-            text-align: center;
-            padding: 20px;
-            font-size: 0.7rem;
-            opacity: 0.5;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            background: linear-gradient(180deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
-            border-radius: 32px;
-            color: var(--text-secondary);
-        }
-        /* 弹窗 - 新拟物风格 */
+        .empty-links { text-align: center; padding: 20px; font-size: 0.7rem; opacity: 0.5; }
+        .empty-state { text-align: center; padding: 50px 20px; background: linear-gradient(180deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%); border-radius: 32px; color: var(--text-secondary); }
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -288,10 +255,7 @@
             flex-direction: column;
             gap: 14px;
         }
-        .menu-popup .btn {
-            margin: 0;
-            justify-content: center;
-        }
+        .menu-popup .btn { margin: 0; justify-content: center; }
         .modal-title { font-weight: 700; font-size: 1rem; text-align: center; color: var(--text-primary); }
         .modal-box input, .modal-box textarea {
             width: 100%;
@@ -364,7 +328,7 @@
     <div id="categoriesContainer" class="categories-container"></div>
 
     <div class="add-category-btn" id="addCategoryBtn">➕ 添加新分类</div>
-    <footer>长按拖拽 ⋮⋮ 可排序 | 点击 ▼ 折叠分类 | 支持任何链接</footer>
+    <footer>长按拖拽 ⋮⋮ 可排序 | 点击 ▼ 折叠分类 | 点击链接名直接跳转</footer>
 </div>
 
 <!-- 菜单弹窗 -->
@@ -448,7 +412,7 @@
 <script>
 // ======================= 数据模块 =======================
 const Storage = {
-    key: 'category_link_manager_v5',
+    key: 'category_link_manager_v6',
     save(data) {
         try { localStorage.setItem(this.key, JSON.stringify(data)); return true; }
         catch(e) { if(e.name === 'QuotaExceededError') alert('存储空间已满！请导出备份后清理。'); return false; }
@@ -571,7 +535,7 @@ function render() {
             html += `<div class="link-item" data-link-id="${link.id}" data-category-id="${cat.id}">
                 <span class="link-drag-handle" data-drag-type="link" data-link-id="${link.id}" data-category-id="${cat.id}">⋮⋮</span>
                 <div class="link-info">
-                    <div class="link-name">${escapeHtml(link.name)}</div>
+                    <div class="link-name"><a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.name)}</a></div>
                     <div class="link-url">${escapeHtml(link.url)}</div>
                     ${link.description ? `<div style="font-size:0.6rem;opacity:0.6;">${escapeHtml(link.description)}</div>` : ''}
                 </div>
@@ -597,47 +561,41 @@ function bindEvents() {
         el.onclick = (e) => { e.stopPropagation(); AppData.toggleCollapse(parseInt(el.dataset.toggleCategory)); render(); };
     });
     document.querySelectorAll('.edit-category').forEach(btn => {
-        btn.onclick = () => { editingCategoryId = parseInt(btn.dataset.categoryId); document.getElementById('categoryNameInput').value = btn.dataset.categoryName; document.getElementById('categoryModalTitle').textContent = '编辑分类'; document.getElementById('categoryModal').classList.add('show'); };
+        btn.onclick = (e) => { e.stopPropagation(); editingCategoryId = parseInt(btn.dataset.categoryId); document.getElementById('categoryNameInput').value = btn.dataset.categoryName; document.getElementById('categoryModalTitle').textContent = '编辑分类'; document.getElementById('categoryModal').classList.add('show'); };
     });
     document.querySelectorAll('.delete-category').forEach(btn => {
-        btn.onclick = () => { if(confirm(`确定删除分类「${btn.dataset.categoryName}」及其所有链接吗？`)) { AppData.deleteCategory(parseInt(btn.dataset.categoryId)); render(); showToast('已删除'); } };
+        btn.onclick = (e) => { e.stopPropagation(); if(confirm(`确定删除分类「${btn.dataset.categoryName}」及其所有链接吗？`)) { AppData.deleteCategory(parseInt(btn.dataset.categoryId)); render(); showToast('已删除'); } };
     });
     document.querySelectorAll('.add-link-btn').forEach(btn => {
-        btn.onclick = () => { currentCategoryIdForLink = parseInt(btn.dataset.categoryId); editingLinkId = null; document.getElementById('linkModalTitle').textContent = '添加链接'; document.getElementById('linkNameInput').value = ''; document.getElementById('linkUrlInput').value = ''; document.getElementById('linkDescInput').value = ''; document.getElementById('linkModal').classList.add('show'); };
+        btn.onclick = (e) => { e.stopPropagation(); currentCategoryIdForLink = parseInt(btn.dataset.categoryId); editingLinkId = null; document.getElementById('linkModalTitle').textContent = '添加链接'; document.getElementById('linkNameInput').value = ''; document.getElementById('linkUrlInput').value = ''; document.getElementById('linkDescInput').value = ''; document.getElementById('linkModal').classList.add('show'); };
     });
     document.querySelectorAll('.edit-link').forEach(btn => {
-        btn.onclick = () => { currentCategoryIdForLink = parseInt(btn.dataset.categoryId); editingLinkId = parseInt(btn.dataset.linkId); document.getElementById('linkModalTitle').textContent = '编辑链接'; document.getElementById('linkNameInput').value = btn.dataset.name; document.getElementById('linkUrlInput').value = btn.dataset.url; document.getElementById('linkDescInput').value = btn.dataset.desc; document.getElementById('linkModal').classList.add('show'); };
+        btn.onclick = (e) => { e.stopPropagation(); currentCategoryIdForLink = parseInt(btn.dataset.categoryId); editingLinkId = parseInt(btn.dataset.linkId); document.getElementById('linkModalTitle').textContent = '编辑链接'; document.getElementById('linkNameInput').value = btn.dataset.name; document.getElementById('linkUrlInput').value = btn.dataset.url; document.getElementById('linkDescInput').value = btn.dataset.desc; document.getElementById('linkModal').classList.add('show'); };
     });
     document.querySelectorAll('.delete-link').forEach(btn => {
-        btn.onclick = () => { if(confirm('确定删除此链接？')) { AppData.deleteLink(parseInt(btn.dataset.categoryId), parseInt(btn.dataset.linkId)); render(); showToast('已删除'); } };
+        btn.onclick = (e) => { e.stopPropagation(); if(confirm('确定删除此链接？')) { AppData.deleteLink(parseInt(btn.dataset.categoryId), parseInt(btn.dataset.linkId)); render(); showToast('已删除'); } };
     });
     document.querySelectorAll('.copy-link').forEach(btn => {
-        btn.onclick = () => { navigator.clipboard.writeText(btn.dataset.url); showToast('✅ 链接已复制'); };
+        btn.onclick = (e) => { e.stopPropagation(); navigator.clipboard.writeText(btn.dataset.url); showToast('✅ 链接已复制'); };
     });
 }
 
-// 拖拽排序 - 使用触摸事件，支持移动端和PC端
+// 拖拽排序
 let dragState = {
     isDragging: false,
-    dragType: null, // 'category' or 'link'
+    dragType: null,
     dragElement: null,
     dragId: null,
     dragCategoryId: null,
-    startY: 0,
+    startX: 0, startY: 0,
+    hasMoved: false,
     targetElement: null,
     targetId: null,
     targetCategoryId: null
 };
 
 function initDragAndDrop() {
-    // 分类拖拽手柄
-    document.querySelectorAll('.drag-handle').forEach(handle => {
-        handle.addEventListener('touchstart', onDragStart, { passive: false });
-        handle.addEventListener('mousedown', onDragStart);
-    });
-    
-    // 链接拖拽手柄
-    document.querySelectorAll('.link-drag-handle').forEach(handle => {
+    document.querySelectorAll('.drag-handle, .link-drag-handle').forEach(handle => {
         handle.addEventListener('touchstart', onDragStart, { passive: false });
         handle.addEventListener('mousedown', onDragStart);
     });
@@ -652,16 +610,15 @@ function onDragStart(e) {
     dragState.dragId = dragState.dragType === 'category' ? handle.dataset.categoryId : handle.dataset.linkId;
     dragState.dragCategoryId = handle.dataset.categoryId;
     dragState.dragElement = handle.closest(dragState.dragType === 'category' ? '.category-card' : '.link-item');
+    dragState.startX = e.touches ? e.touches[0].clientX : e.clientX;
+    dragState.startY = e.touches ? e.touches[0].clientY : e.clientY;
+    dragState.hasMoved = false;
     
     if (!dragState.dragElement) return;
     
     dragState.isDragging = true;
     dragState.dragElement.classList.add('dragging');
     
-    const startPoint = e.touches ? e.touches[0].clientY : e.clientY;
-    dragState.startY = startPoint;
-    
-    // 绑定移动和结束事件
     if (e.type === 'touchstart') {
         document.addEventListener('touchmove', onDragMove);
         document.addEventListener('touchend', onDragEnd);
@@ -675,22 +632,23 @@ function onDragMove(e) {
     if (!dragState.isDragging) return;
     e.preventDefault();
     
+    const currentX = e.touches ? e.touches[0].clientX : e.clientX;
     const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-    const dragElement = dragState.dragElement;
+    const deltaX = Math.abs(currentX - dragState.startX);
+    const deltaY = Math.abs(currentY - dragState.startY);
     
-    // 移动拖拽元素的视觉效果
-    if (dragElement) {
-        const deltaY = currentY - dragState.startY;
-        dragElement.style.transform = `translateY(${deltaY}px)`;
-        dragElement.style.transition = 'none';
+    if (!dragState.hasMoved && (deltaX > 5 || deltaY > 5)) {
+        dragState.hasMoved = true;
     }
     
-    // 查找当前悬停的目标元素
-    const elemUnderCursor = document.elementsFromPoint(
-        e.touches ? e.touches[0].clientX : e.clientX,
-        currentY
-    );
+    if (!dragState.hasMoved) return;
     
+    if (dragState.dragElement) {
+        dragState.dragElement.style.transform = `translateY(${currentY - dragState.startY}px)`;
+        dragState.dragElement.style.transition = 'none';
+    }
+    
+    const elemUnderCursor = document.elementsFromPoint(currentX, currentY);
     let target = null;
     for (let el of elemUnderCursor) {
         if (dragState.dragType === 'category' && el.classList && el.classList.contains('category-card') && el !== dragState.dragElement) {
@@ -698,15 +656,13 @@ function onDragMove(e) {
             break;
         }
         if (dragState.dragType === 'link' && el.classList && el.classList.contains('link-item') && el !== dragState.dragElement) {
-            const targetCatId = el.dataset.categoryId;
-            if (targetCatId === dragState.dragCategoryId) {
+            if (el.dataset.categoryId === dragState.dragCategoryId) {
                 target = el;
                 break;
             }
         }
     }
     
-    // 移除所有高亮
     document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
     if (target) {
         target.classList.add('drag-over');
@@ -723,7 +679,6 @@ function onDragMove(e) {
 function onDragEnd(e) {
     if (!dragState.isDragging) return;
     
-    // 恢复样式
     if (dragState.dragElement) {
         dragState.dragElement.style.transform = '';
         dragState.dragElement.style.transition = '';
@@ -731,8 +686,7 @@ function onDragEnd(e) {
     }
     document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
     
-    // 执行排序
-    if (dragState.targetElement && dragState.targetId) {
+    if (dragState.hasMoved && dragState.targetElement && dragState.targetId) {
         if (dragState.dragType === 'category') {
             const categories = [...AppData.categories];
             const fromIdx = categories.findIndex(c => c.id == dragState.dragId);
@@ -762,20 +716,19 @@ function onDragEnd(e) {
         }
     }
     
-    // 重置拖拽状态
     dragState = {
         isDragging: false,
         dragType: null,
         dragElement: null,
         dragId: null,
         dragCategoryId: null,
-        startY: 0,
+        startX: 0, startY: 0,
+        hasMoved: false,
         targetElement: null,
         targetId: null,
         targetCategoryId: null
     };
     
-    // 移除事件监听
     document.removeEventListener('touchmove', onDragMove);
     document.removeEventListener('touchend', onDragEnd);
     document.removeEventListener('mousemove', onDragMove);
