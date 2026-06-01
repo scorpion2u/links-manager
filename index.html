@@ -107,7 +107,6 @@
             align-items: center;
             justify-content: space-between;
             padding: 14px 18px;
-            cursor: pointer;
             gap: 10px;
         }
         .drag-handle {
@@ -117,6 +116,15 @@
             padding: 0 4px;
         }
         .drag-handle:active { cursor: grabbing; }
+        .collapse-btn {
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            padding: 4px 8px;
+            border-radius: 20px;
+            transition: transform 0.2s;
+        }
+        .collapse-btn:active { transform: scale(0.9); }
         .category-title {
             font-size: 1rem;
             font-weight: 700;
@@ -145,11 +153,6 @@
             justify-content: center;
         }
         .icon-btn:active { transform: scale(0.92); box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1); }
-        .collapse-icon {
-            font-size: 0.7rem;
-            transition: transform 0.3s;
-        }
-        .category-card.collapsed .collapse-icon { transform: rotate(-90deg); }
         .category-card.collapsed .category-body { display: none; }
         .category-body {
             padding: 0 16px 16px;
@@ -327,7 +330,6 @@
             white-space: pre-wrap;
             box-shadow: inset 3px 3px 6px rgba(0,0,0,0.08), inset -2px -2px 4px rgba(255,255,255,0.5);
         }
-        #qrcodeCanvas canvas { display: block; margin: 0 auto; border-radius: 16px; }
     </style>
 </head>
 <body>
@@ -342,7 +344,7 @@
     <div id="categoriesContainer" class="categories-container"></div>
 
     <div class="add-category-btn" id="addCategoryBtn">➕ 添加新分类</div>
-    <footer>拖拽 ⋮⋮ 可排序 | 点击分类标题折叠 | 支持任何链接</footer>
+    <footer>拖拽 ⋮⋮ 可排序 | 点击 ▼ 折叠分类 | 支持任何链接</footer>
 </div>
 
 <!-- 菜单弹窗 - 新拟物风格 -->
@@ -378,15 +380,6 @@
             <button class="btn" id="downloadNotesBtn">💾 下载</button>
             <button class="btn" id="closeNotesBtn">关闭</button>
         </div>
-    </div>
-</div>
-
-<!-- 二维码 -->
-<div class="modal-overlay" id="qrcodeOverlay">
-    <div class="modal-box">
-        <div class="modal-title">📱 二维码</div>
-        <div id="qrcodeCanvas"></div>
-        <button class="btn" id="closeQrcodeBtn">关闭</button>
     </div>
 </div>
 
@@ -435,7 +428,7 @@
 <script>
 // ======================= 数据模块 =======================
 const Storage = {
-    key: 'category_link_manager_v2',
+    key: 'category_link_manager_v3',
     save(data) {
         try { localStorage.setItem(this.key, JSON.stringify(data)); return true; }
         catch(e) { if(e.name === 'QuotaExceededError') alert('存储空间已满！请导出备份后清理。'); return false; }
@@ -455,7 +448,6 @@ const AppData = {
         this.categories = saved.categories || [];
         this.nextCategoryId = saved.nextCategoryId || 1;
         this.nextLinkId = saved.nextLinkId || 1;
-        // 不添加任何默认分类，完全由用户自己添加
         this.save();
     },
     save() { Storage.save({ categories: this.categories, nextCategoryId: this.nextCategoryId, nextLinkId: this.nextLinkId }); },
@@ -526,38 +518,6 @@ const AppData = {
     }
 };
 
-// 二维码生成器
-const QRGenerator = {
-    generateCanvas(text, size = 200) {
-        const canvas = document.createElement('canvas');
-        canvas.width = size; canvas.height = size;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
-        ctx.fillStyle = '#000000';
-        let hash = 0;
-        for (let i = 0; i < text.length; i++) hash = ((hash << 5) - hash) + text.charCodeAt(i);
-        const blockSize = size / 32;
-        for (let row = 0; row < 32; row++) {
-            for (let col = 0; col < 32; col++) {
-                if (((hash >> ((row * 32 + col) % 31)) & 1) || (text.length % 2))
-                    ctx.fillRect(col * blockSize, row * blockSize, blockSize - 1, blockSize - 1);
-            }
-        }
-        for (let pos of [[0,0], [size-28,0], [0,size-28]]) {
-            ctx.fillRect(pos[0], pos[1], 28, 28);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(pos[0]+6, pos[1]+6, 16, 16);
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(pos[0]+10, pos[1]+10, 8, 8);
-            ctx.fillStyle = '#000000';
-        }
-        ctx.font = `${Math.floor(size/20)}px monospace`;
-        const displayText = text.length > 25 ? text.substring(0,22)+'...' : text;
-        ctx.fillText(displayText, size/10, size - 8);
-        return canvas;
-    }
-};
-
 // UI 渲染
 let editingCategoryId = null;
 let currentCategoryIdForLink = null;
@@ -577,12 +537,12 @@ function render() {
         html += `<div class="category-card ${cat.collapsed ? 'collapsed' : ''}" data-category-id="${cat.id}">
             <div class="category-header">
                 <span class="drag-handle" data-drag="category">⋮⋮</span>
-                <span class="category-title" data-toggle-category="${cat.id}">📁 ${escapeHtml(cat.name)}</span>
+                <span class="collapse-btn" data-toggle-category="${cat.id}">▼</span>
+                <span class="category-title">📁 ${escapeHtml(cat.name)}</span>
                 <span class="category-stats">${linkCount}个链接</span>
                 <div class="category-actions">
                     <button class="icon-btn edit-category" data-category-id="${cat.id}" data-category-name="${escapeHtml(cat.name)}">✏️</button>
                     <button class="icon-btn delete-category" data-category-id="${cat.id}" data-category-name="${escapeHtml(cat.name)}">🗑️</button>
-                    <span class="collapse-icon">▼</span>
                 </div>
             </div>
             <div class="category-body">
@@ -596,7 +556,6 @@ function render() {
                     ${link.description ? `<div style="font-size:0.6rem;opacity:0.6;">${escapeHtml(link.description)}</div>` : ''}
                 </div>
                 <div class="link-actions">
-                    <button class="btn-sm-icon qrcode-link" data-url="${escapeHtml(link.url)}">📱</button>
                     <button class="btn-sm-icon copy-link" data-url="${escapeHtml(link.url)}">📋</button>
                     <button class="btn-sm-icon edit-link" data-category-id="${cat.id}" data-link-id="${link.id}" data-name="${escapeHtml(link.name)}" data-url="${escapeHtml(link.url)}" data-desc="${escapeHtml(link.description || '')}">✏️</button>
                     <button class="btn-sm-icon delete-link" data-category-id="${cat.id}" data-link-id="${link.id}">🗑️</button>
@@ -633,9 +592,6 @@ function bindEvents() {
     });
     document.querySelectorAll('.copy-link').forEach(btn => {
         btn.onclick = () => { navigator.clipboard.writeText(btn.dataset.url); showToast('✅ 链接已复制'); };
-    });
-    document.querySelectorAll('.qrcode-link').forEach(btn => {
-        btn.onclick = () => { const canvas = QRGenerator.generateCanvas(btn.dataset.url, 200); const qcDiv = document.getElementById('qrcodeCanvas'); qcDiv.innerHTML = ''; qcDiv.appendChild(canvas); document.getElementById('qrcodeOverlay').classList.add('show'); };
     });
 }
 
@@ -749,7 +705,6 @@ document.getElementById('clearConfirmOk').onclick = clearAllData;
 document.getElementById('copyNotesBtn').onclick = () => { navigator.clipboard.writeText(document.getElementById('notesPreview').innerText); showToast('笔记已复制'); };
 document.getElementById('downloadNotesBtn').onclick = () => { const blob = new Blob([document.getElementById('notesPreview').innerText], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'links_notes.txt'; a.click(); };
 document.getElementById('closeNotesBtn').onclick = () => document.getElementById('notesOverlay').classList.remove('show');
-document.getElementById('closeQrcodeBtn').onclick = () => document.getElementById('qrcodeOverlay').classList.remove('show');
 document.querySelectorAll('.modal-overlay').forEach(el => { el.addEventListener('click', (e) => { if(e.target === el) el.classList.remove('show'); }); });
 
 AppData.init();
