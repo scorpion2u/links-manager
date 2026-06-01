@@ -114,15 +114,17 @@
             font-size: 1.1rem;
             opacity: 0.4;
             padding: 0 4px;
+            user-select: none;
         }
         .drag-handle:active { cursor: grabbing; }
         .collapse-btn {
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             opacity: 0.5;
             padding: 4px 8px;
             border-radius: 20px;
             transition: transform 0.2s;
+            user-select: none;
         }
         .collapse-btn:active { transform: scale(0.9); }
         .category-title {
@@ -179,6 +181,7 @@
             font-size: 0.9rem;
             opacity: 0.3;
             padding: 0 4px;
+            user-select: none;
         }
         .link-info {
             flex: 1;
@@ -347,7 +350,7 @@
     <footer>拖拽 ⋮⋮ 可排序 | 点击 ▼ 折叠分类 | 支持任何链接</footer>
 </div>
 
-<!-- 菜单弹窗 - 新拟物风格 -->
+<!-- 菜单弹窗 -->
 <div class="modal-overlay" id="menuOverlay">
     <div class="menu-popup">
         <button class="btn" id="exportNotesBtn">📋 导出笔记</button>
@@ -428,7 +431,7 @@
 <script>
 // ======================= 数据模块 =======================
 const Storage = {
-    key: 'category_link_manager_v3',
+    key: 'category_link_manager_v4',
     save(data) {
         try { localStorage.setItem(this.key, JSON.stringify(data)); return true; }
         catch(e) { if(e.name === 'QuotaExceededError') alert('存储空间已满！请导出备份后清理。'); return false; }
@@ -595,35 +598,61 @@ function bindEvents() {
     });
 }
 
-// 拖拽排序
+// 拖拽排序 - 使用 HTML5 Drag & Drop API 修复
 let dragSrc = null;
-document.addEventListener('dragstart', (e) => { if(e.target.closest('[data-drag]')) dragSrc = e.target.closest('[data-drag]'); });
-document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('dragstart', (e) => {
+    const dragEl = e.target.closest('[data-drag]');
+    if (dragEl) {
+        dragSrc = dragEl;
+        e.dataTransfer.setData('text/plain', 'drag');
+        e.dataTransfer.effectAllowed = 'move';
+        // 让拖拽时显示一个半透明效果
+        dragEl.style.opacity = '0.5';
+    }
+});
+document.addEventListener('dragend', (e) => {
+    if (dragSrc) {
+        dragSrc.style.opacity = '';
+        dragSrc = null;
+    }
+});
+document.addEventListener('dragover', (e) => {
+    const target = e.target.closest('.category-card, .link-item');
+    if (target && dragSrc) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+});
 document.addEventListener('drop', (e) => {
     e.preventDefault();
-    if(!dragSrc) return;
-    const target = e.target.closest('.category-card') || e.target.closest('.link-item');
-    if(!target) return;
-    if(dragSrc.dataset.drag === 'category' && target.classList.contains('category-card')) {
+    if (!dragSrc) return;
+    
+    const targetCat = e.target.closest('.category-card');
+    const targetLink = e.target.closest('.link-item');
+    
+    // 分类拖拽
+    if (dragSrc.dataset.drag === 'category' && targetCat && targetCat.classList.contains('category-card')) {
         const cats = [...AppData.categories];
         const fromIdx = cats.findIndex(c => c.id == dragSrc.closest('.category-card').dataset.categoryId);
-        const toIdx = cats.findIndex(c => c.id == target.dataset.categoryId);
-        if(fromIdx !== -1 && toIdx !== -1) {
+        const toIdx = cats.findIndex(c => c.id == targetCat.dataset.categoryId);
+        if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
             const [moved] = cats.splice(fromIdx, 1);
             cats.splice(toIdx, 0, moved);
             AppData.reorderCategories(cats);
             render();
         }
-    } else if(dragSrc.dataset.drag === 'link' && target.classList.contains('link-item')) {
+    }
+    // 链接拖拽
+    else if (dragSrc.dataset.drag === 'link' && targetLink) {
         const parentCat = dragSrc.closest('.category-card');
-        const targetCat = target.closest('.category-card');
-        if(parentCat && parentCat.dataset.categoryId === targetCat.dataset.categoryId) {
+        const targetParentCat = targetLink.closest('.category-card');
+        if (parentCat && targetParentCat && parentCat.dataset.categoryId === targetParentCat.dataset.categoryId) {
             const catId = parseInt(parentCat.dataset.categoryId);
             const cat = AppData.categories.find(c => c.id === catId);
             const links = [...cat.links];
             const fromIdx = links.findIndex(l => l.id == dragSrc.closest('.link-item').dataset.linkId);
-            const toIdx = links.findIndex(l => l.id == target.dataset.linkId);
-            if(fromIdx !== -1 && toIdx !== -1) {
+            const toIdx = links.findIndex(l => l.id == targetLink.dataset.linkId);
+            if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
                 const [moved] = links.splice(fromIdx, 1);
                 links.splice(toIdx, 0, moved);
                 AppData.reorderLinks(catId, links);
@@ -631,6 +660,7 @@ document.addEventListener('drop', (e) => {
             }
         }
     }
+    dragSrc.style.opacity = '';
     dragSrc = null;
 });
 
