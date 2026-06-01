@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>GitHub 链接管家</title>
+    <title>链接管家 | 新拟态版</title>
     
     <!-- PWA 配置 -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#d4d4d4">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="GitHub管家">
+    <meta name="apple-mobile-web-app-title" content="链接管家">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="icon" type="image/png" href="icon-192.png" sizes="192x192">
     <link rel="icon" type="image/png" href="icon-512.png" sizes="512x512">
@@ -23,7 +23,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* ========== 新拟态风格 - 无暗黑模式 ========== */
+        /* ========== 新拟态风格 ========== */
         :root {
             --bg-start: #dbdbdb;
             --bg-end: #c2c2c2;
@@ -37,7 +37,6 @@
             --btn-bg: linear-gradient(180deg, #e6e6e6 0%, #cccccc 100%);
             --toast-bg: #5a5a5a;
             --skeleton-grad: linear-gradient(90deg, #c0c0c0 25%, #e0e0e0 50%, #c0c0c0 75%);
-            --accent-gray: #9a9a9a;
         }
         body {
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -116,7 +115,6 @@
             outline: none;
             box-shadow: inset 3px 3px 8px rgba(0,0,0,0.12), inset -2px -2px 6px rgba(255,255,255,0.5);
         }
-        /* 统一按钮风格 - 全部新拟态灰色，无绿色 */
         .btn {
             border: none;
             border-radius: 40px;
@@ -138,7 +136,6 @@
             transform: scale(0.97);
             box-shadow: inset 3px 3px 8px rgba(0,0,0,0.15), inset -2px -2px 5px rgba(255,255,255,0.5);
         }
-        /* 主要操作按钮：保持统一灰色，不加绿色 */
         .btn-primary {
             background: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 100%);
             color: #2c3e2f;
@@ -292,7 +289,6 @@
             margin-bottom: 12px;
             opacity: 0.7;
         }
-        /* 菜单与模态框 */
         .menu-overlay, .modal-overlay {
             position: fixed;
             inset: 0;
@@ -364,26 +360,26 @@
 <body>
 <div class="app">
     <div class="title-card">
-        <div class="title-left"><span class="app-icon">📘</span><span class="app-title">GitHub 链接管家</span></div>
+        <div class="title-left"><span class="app-icon">📘</span><span class="app-title">链接管家</span></div>
         <div class="title-actions">
             <button class="header-btn" id="menuBtn">☰</button>
         </div>
     </div>
 
     <div class="add-panel">
-        <div class="form-group"><label>📁 仓库名称 *</label><input type="text" id="repoName" placeholder="例如: awesome-repo" autocomplete="off"></div>
-        <div class="form-group"><label>🔗 GitHub 链接 *</label><input type="text" id="repoUrl" placeholder="https://github.com/用户名/仓库名" autocomplete="off"></div>
-        <div class="form-group"><label>📝 功能说明</label><textarea id="repoDesc" rows="2" placeholder="描述仓库用途..."></textarea></div>
-        <button class="btn btn-primary" id="addBtn">➕ 添加仓库</button>
+        <div class="form-group"><label>📁 名称 *</label><input type="text" id="repoName" placeholder="例如: 收支记账本" autocomplete="off"></div>
+        <div class="form-group"><label>🔗 链接 *</label><input type="text" id="repoUrl" placeholder="https:// 或 http:// 开头的任何链接" autocomplete="off"></div>
+        <div class="form-group"><label>📝 功能说明</label><textarea id="repoDesc" rows="2" placeholder="描述这个链接的用途..."></textarea></div>
+        <button class="btn btn-primary" id="addBtn">➕ 添加链接</button>
     </div>
 
     <div class="toolbar">
         <div class="search-box"><span>🔍</span><input type="text" id="searchInput" placeholder="搜索名称或说明..."></div>
-        <div class="stats" id="statsDisplay">📦 0 个仓库</div>
+        <div class="stats" id="statsDisplay">📦 0 个链接</div>
     </div>
 
     <div id="linksContainer" class="links-grid"></div>
-    <footer>💾 自动保存 | 导入(覆盖/合并) | 二维码分享 | 严格校验</footer>
+    <footer>💾 自动保存 | 导入(覆盖/合并) | 二维码分享 | 支持任何链接</footer>
 </div>
 
 <div class="menu-overlay" id="menuOverlay"><div class="menu-popup"><button class="btn" id="exportNotesBtn">📋 导出笔记</button><button class="btn" id="exportBackupBtn">💾 导出备份</button><button class="btn" id="importBtn">📂 导入数据</button><button class="btn btn-danger" id="clearAllBtn">⚠️ 清理所有数据</button><button class="btn" id="menuCloseBtn">关闭</button></div></div>
@@ -392,9 +388,9 @@
 
 <div class="modal-overlay" id="notesOverlay"><div class="modal-box"><div class="modal-title">📝 导出笔记</div><div class="export-preview" id="notesPreview"></div><div class="row-buttons"><button class="btn btn-sm" id="copyNotesBtn">📋 复制</button><button class="btn btn-sm" id="downloadNotesBtn">💾 下载</button><button class="btn btn-sm" id="closeNotesBtn">关闭</button></div></div></div>
 
-<div class="modal-overlay" id="qrcodeOverlay"><div class="modal-box"><div class="modal-title">📱 仓库二维码</div><div id="qrcodeCanvas"></div><div class="row-buttons"><button class="btn btn-sm" id="closeQrcodeBtn">关闭</button></div></div></div>
+<div class="modal-overlay" id="qrcodeOverlay"><div class="modal-box"><div class="modal-title">📱 链接二维码</div><div id="qrcodeCanvas"></div><div class="row-buttons"><button class="btn btn-sm" id="closeQrcodeBtn">关闭</button></div></div></div>
 
-<div class="modal-overlay" id="clearConfirmOverlay"><div class="modal-box"><div class="modal-title">⚠️ 危险操作</div><div class="modal-message">清空后将删除所有仓库链接，无法恢复！</div><div class="danger-input"><input type="text" id="clearConfirmInput" placeholder='输入"确认删除"'></div><div class="danger-warning">⚠️ 不可撤销</div><div class="row-buttons"><button class="btn" id="clearConfirmCancel">取消</button><button class="btn btn-danger" id="clearConfirmOk" disabled>确认清空</button></div></div></div>
+<div class="modal-overlay" id="clearConfirmOverlay"><div class="modal-box"><div class="modal-title">⚠️ 危险操作</div><div class="modal-message">清空后将删除所有链接，无法恢复！</div><div class="danger-input"><input type="text" id="clearConfirmInput" placeholder='输入"确认删除"'></div><div class="danger-warning">⚠️ 不可撤销</div><div class="row-buttons"><button class="btn" id="clearConfirmCancel">取消</button><button class="btn btn-danger" id="clearConfirmOk" disabled>确认清空</button></div></div></div>
 
 <input type="file" id="importFile" accept=".json" style="display:none;">
 <div class="toast" id="toastMsg"></div>
@@ -403,7 +399,7 @@
 // ======================= 完整模块化重构 =======================
 // Storage 模块
 const Storage = {
-    key: 'github_links_perfect_v3',
+    key: 'link_manager_v4',
     save(data) {
         try {
             localStorage.setItem(this.key, JSON.stringify(data));
@@ -479,19 +475,17 @@ const Repository = {
     }
 };
 
-// Validator 模块
+// Validator 模块 - 已修改为接受所有链接（只校验URL格式）
 const Validator = {
-    isValidGitHubUrl(urlString) {
-        try {
-            const url = new URL(urlString);
-            const hostname = url.hostname.toLowerCase();
-            return hostname === 'github.com' || hostname === 'www.github.com';
-        } catch { return false; }
-    },
+    // 接受任何格式正确的 URL（http:// 或 https:// 开头即可）
     isValidUrlFormat(urlString) {
-        try { new URL(urlString); return true; }
+        try { 
+            new URL(urlString); 
+            return true;
+        }
         catch { return false; }
     },
+    // 导入数据时的校验（只要求 name 和 url 字段有效）
     validateImportData(parsed) {
         let imported = parsed.repositories || (Array.isArray(parsed) ? parsed : null);
         if (!imported || !imported.length) return { valid: false, error: '无有效数据' };
@@ -514,10 +508,6 @@ const Validator = {
             }
             if (!this.isValidUrlFormat(r.url)) {
                 errors.push(`第 ${i+1} 条: url 格式无效 (${r.url})`);
-                continue;
-            }
-            if (!this.isValidGitHubUrl(r.url)) {
-                errors.push(`第 ${i+1} 条: 非 GitHub 域名 (${r.url})，已跳过`);
                 continue;
             }
             validRepos.push({
@@ -590,7 +580,7 @@ function showToast(msg) {
 }
 
 function generateNotes() {
-    let text = `📘 GitHub 仓库列表\n生成时间: ${new Date().toLocaleString()}\n总计: ${Repository.getAll().length} 个仓库\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    let text = `📘 我的链接列表\n生成时间: ${new Date().toLocaleString()}\n总计: ${Repository.getAll().length} 个链接\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
     Repository.getAll().forEach((repo, idx) => {
         text += `${idx+1}. 【${repo.name}】\n   链接: ${repo.url}\n   说明: ${repo.description || '无'}\n\n`;
     });
@@ -600,8 +590,8 @@ function generateNotes() {
 function renderEmptyState(searchActive) {
     return `<div class="empty-state">
         <div class="empty-illustration">📭</div>
-        <div style="font-weight:600; margin-bottom:12px;">${searchActive ? '没有找到相关仓库' : '还没有任何仓库链接'}</div>
-        <div style="font-size:0.75rem; opacity:0.7;">${searchActive ? '试试其他关键词' : '点击上方「添加仓库」开始收集'}</div>
+        <div style="font-weight:600; margin-bottom:12px;">${searchActive ? '没有找到相关链接' : '还没有任何链接'}</div>
+        <div style="font-size:0.75rem; opacity:0.7;">${searchActive ? '试试其他关键词' : '点击上方「添加链接」开始收藏'}</div>
         ${!searchActive ? '<button class="btn btn-sm" id="emptyAddBtn" style="margin-top:16px; width:auto;">➕ 立即添加</button>' : ''}
     </div>`;
 }
@@ -615,7 +605,7 @@ function render() {
         const kw = searchKeyword.trim().toLowerCase();
         repos = repos.filter(r => r.name.toLowerCase().includes(kw) || (r.description || '').toLowerCase().includes(kw));
     }
-    statsSpan.innerText = `📦 ${Repository.getAll().length} 个仓库${repos.length !== Repository.getAll().length ? ` (显示${repos.length})` : ''}`;
+    statsSpan.innerText = `📦 ${Repository.getAll().length} 个链接${repos.length !== Repository.getAll().length ? ` (显示${repos.length})` : ''}`;
     
     if (repos.length === 0) {
         container.innerHTML = renderEmptyState(isSearching);
@@ -632,8 +622,8 @@ function render() {
                 <div class="card-header"><div class="repo-title"><span style="color:#3b82f6;">✏️ 编辑模式</span></div>
                 <div class="card-actions"><button class="icon-btn cancel-edit" data-id="${repo.id}" data-action="cancelEdit">❌</button></div></div>
                 <div class="inline-edit-form">
-                    <input type="text" id="edit-name-${repo.id}" value="${escapeHtml(editCache.name)}" placeholder="仓库名称" data-field="name">
-                    <input type="text" id="edit-url-${repo.id}" value="${escapeHtml(editCache.url)}" placeholder="GitHub链接" data-field="url">
+                    <input type="text" id="edit-name-${repo.id}" value="${escapeHtml(editCache.name)}" placeholder="名称" data-field="name">
+                    <input type="text" id="edit-url-${repo.id}" value="${escapeHtml(editCache.url)}" placeholder="链接" data-field="url">
                     <textarea id="edit-desc-${repo.id}" rows="2" placeholder="功能说明" data-field="desc">${escapeHtml(editCache.desc)}</textarea>
                     <div class="row-buttons"><button class="btn btn-sm save-edit" data-id="${repo.id}" data-action="saveEdit">💾 保存</button></div>
                 </div>
@@ -641,10 +631,10 @@ function render() {
             </div>`;
         } else {
             html += `<div class="repo-card" data-id="${repo.id}">
-                <div class="card-header"><div class="repo-title"><a href="${escapeHtml(repo.url)}" target="_blank">${escapeHtml(repo.name)}</a> <span>↗️</span></div>
+                <div class="card-header"><div class="repo-title"><a href="${escapeHtml(repo.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(repo.name)}</a> <span>↗️</span></div>
                 <div class="card-actions"><button class="icon-btn" data-action="copyLink" data-url="${escapeHtml(repo.url)}">📋</button><button class="icon-btn" data-action="qrcode" data-url="${escapeHtml(repo.url)}" data-name="${escapeHtml(repo.name)}">📱</button><button class="icon-btn" data-action="edit" data-id="${repo.id}">✏️</button><button class="icon-btn" data-action="delete" data-id="${repo.id}">🗑️</button></div></div>
                 <div class="card-desc">${repo.description ? escapeHtml(repo.description) : '<span style="opacity:0.5;">暂无功能说明</span>'}</div>
-                <div class="card-footer"><a href="${escapeHtml(repo.url)}" target="_blank" class="btn-sm">🔗 访问仓库</a></div>
+                <div class="card-footer"><a href="${escapeHtml(repo.url)}" target="_blank" rel="noopener noreferrer" class="btn-sm">🔗 访问链接</a></div>
             </div>`;
         }
     }
@@ -677,10 +667,9 @@ function saveEdit(id) {
     const newName = document.getElementById(`edit-name-${id}`)?.value.trim();
     const newUrl = document.getElementById(`edit-url-${id}`)?.value.trim();
     const newDesc = document.getElementById(`edit-desc-${id}`)?.value;
-    if (!newName) { alert('仓库名称不能为空'); return; }
+    if (!newName) { alert('名称不能为空'); return; }
     if (!newUrl) { alert('链接不能为空'); return; }
-    if (!Validator.isValidUrlFormat(newUrl)) { alert('链接格式无效'); return; }
-    if (!Validator.isValidGitHubUrl(newUrl)) { alert('仅支持 GitHub 链接'); return; }
+    if (!Validator.isValidUrlFormat(newUrl)) { alert('链接格式无效，请以 http:// 或 https:// 开头'); return; }
     Repository.update(id, newName, newUrl, newDesc);
     currentEditId = null;
     hasUnsavedChanges = false;
@@ -712,7 +701,7 @@ container.addEventListener('click', (e) => {
     
     if (action === 'edit') { startEdit(id); }
     else if (action === 'delete') {
-        if (confirm('永久删除此仓库？')) {
+        if (confirm('永久删除此链接？')) {
             const card = btn.closest('.repo-card');
             card.style.animation = 'cardFadeOut 0.2s ease-in forwards';
             setTimeout(() => {
@@ -743,10 +732,9 @@ function handleAdd() {
     let name = document.getElementById('repoName').value.trim();
     let url = document.getElementById('repoUrl').value.trim();
     let desc = document.getElementById('repoDesc').value;
-    if (!name) { alert('请填写仓库名称'); return; }
+    if (!name) { alert('请填写名称'); return; }
     if (!url) { alert('请填写链接'); return; }
-    if (!Validator.isValidUrlFormat(url)) { alert('链接格式无效'); return; }
-    if (!Validator.isValidGitHubUrl(url)) { alert('只允许添加 GitHub 链接'); return; }
+    if (!Validator.isValidUrlFormat(url)) { alert('链接格式无效，请以 http:// 或 https:// 开头'); return; }
     Repository.add(name, url, desc);
     document.getElementById('repoName').value = '';
     document.getElementById('repoUrl').value = '';
@@ -767,7 +755,7 @@ function exportBackup() {
     const data = Repository.getAll();
     const blob = new Blob([JSON.stringify({ version: '2', date: new Date().toISOString(), repositories: data }, null, 2)], {type: 'application/json'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `github_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+    a.download = `links_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
     a.click(); URL.revokeObjectURL(a.href); showToast('备份已导出');
 }
 function showImportModeSelector() { document.getElementById('importModeOverlay').classList.add('show'); }
@@ -792,9 +780,9 @@ function triggerImportWithMode(mode) {
                     if (!confirm(`发现 ${validation.errors.length} 条无效记录已跳过。是否继续导入 ${validation.count} 条有效数据？`)) return;
                 }
                 if (mode === 'overwrite') {
-                    if (confirm(`覆盖模式将替换当前 ${Repository.getAll().length} 个仓库，确定吗？`)) {
+                    if (confirm(`覆盖模式将替换当前 ${Repository.getAll().length} 个链接，确定吗？`)) {
                         const count = Repository.overwriteImport(validation.data);
-                        showToast(`覆盖导入成功，共 ${count} 个仓库`);
+                        showToast(`覆盖导入成功，共 ${count} 个链接`);
                     }
                 } else {
                     const { added, skipped } = Repository.mergeImport(validation.data);
@@ -841,7 +829,7 @@ function bindGlobalEvents() {
     document.getElementById('mergeImportBtn').onclick = () => triggerImportWithMode('merge');
     document.getElementById('cancelImportBtn').onclick = hideImportModeSelector;
     document.getElementById('copyNotesBtn').onclick = () => { const txt = document.getElementById('notesPreview').innerText; navigator.clipboard.writeText(txt); showToast('笔记已复制'); };
-    document.getElementById('downloadNotesBtn').onclick = () => { const txt = document.getElementById('notesPreview').innerText; const blob = new Blob([txt], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'github_notes.txt'; a.click(); };
+    document.getElementById('downloadNotesBtn').onclick = () => { const txt = document.getElementById('notesPreview').innerText; const blob = new Blob([txt], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'links_notes.txt'; a.click(); };
     document.getElementById('closeNotesBtn').onclick = () => document.getElementById('notesOverlay').classList.remove('show');
     document.getElementById('closeQrcodeBtn').onclick = () => document.getElementById('qrcodeOverlay').classList.remove('show');
     document.getElementById('clearConfirmCancel').onclick = () => document.getElementById('clearConfirmOverlay').classList.remove('show');
