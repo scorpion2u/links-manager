@@ -1,4 +1,4 @@
-const CACHE_NAME = 'github-manager-v2';
+const CACHE_NAME = 'links-manager-v1';
 const urlsToCache = [
   './',
   './index.html',
