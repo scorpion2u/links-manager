@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>GitHub 链接管家 | 完美版</title>
+    <title>GitHub 链接管家 | 新拟态版</title>
     
     <!-- PWA 配置 -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#3b82f6">
+    <meta name="theme-color" content="#d4d4d4">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GitHub管家">
@@ -23,7 +23,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* ========== 深色模式变量 ========== */
+        /* ========== 新拟态风格 - 无暗黑模式 ========== */
         :root {
             --bg-start: #dbdbdb;
             --bg-end: #c2c2c2;
@@ -37,20 +37,7 @@
             --btn-bg: linear-gradient(180deg, #e6e6e6 0%, #cccccc 100%);
             --toast-bg: #5a5a5a;
             --skeleton-grad: linear-gradient(90deg, #c0c0c0 25%, #e0e0e0 50%, #c0c0c0 75%);
-        }
-        body.dark {
-            --bg-start: #2d2d2d;
-            --bg-end: #1a1a1a;
-            --card-bg-start: #3a3a3a;
-            --card-bg-end: #2c2c2c;
-            --text-primary: #ececec;
-            --text-secondary: #b0b0b0;
-            --border-light: rgba(255,255,255,0.08);
-            --shadow-outer: 8px 8px 16px rgba(0,0,0,0.4), -4px -4px 12px rgba(255,255,255,0.05);
-            --shadow-inner: inset 3px 3px 6px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(255,255,255,0.05);
-            --btn-bg: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 100%);
-            --toast-bg: #2c2c2c;
-            --skeleton-grad: linear-gradient(90deg, #3a3a3a 25%, #4a4a4a 50%, #3a3a3a 75%);
+            --accent-gray: #9a9a9a;
         }
         body {
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -62,7 +49,6 @@
             min-height: 100vh;
             padding: 16px;
             margin: 0;
-            transition: background 0.2s;
         }
         .app {
             width: 100%;
@@ -86,7 +72,7 @@
         }
         .title-left { display: flex; align-items: center; gap: 14px; }
         .app-icon { font-size: 1.8rem; }
-        .app-title { font-weight: 800; font-size: 1.4rem; color: var(--text-primary); }
+        .app-title { font-weight: 800; font-size: 1.4rem; color: var(--text-primary); letter-spacing: -0.3px; }
         .title-actions { display: flex; gap: 12px; }
         .header-btn {
             width: 40px; height: 40px; border: none; border-radius: 50%; cursor: pointer;
@@ -98,7 +84,7 @@
             align-items: center;
             justify-content: center;
         }
-        .header-btn:active { transform: scale(0.94); }
+        .header-btn:active { transform: scale(0.94); box-shadow: inset 3px 3px 6px rgba(0,0,0,0.15), inset -2px -2px 5px rgba(255,255,255,0.5); }
         .add-panel {
             background: linear-gradient(180deg, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
             border-radius: 32px;
@@ -110,6 +96,8 @@
             display: block;
             font-size: 0.7rem;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             color: var(--text-secondary);
             margin-bottom: 6px;
         }
@@ -124,7 +112,11 @@
             font-family: inherit;
             color: var(--text-primary);
         }
-        .form-group input:focus, .form-group textarea:focus { outline: none; }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            box-shadow: inset 3px 3px 8px rgba(0,0,0,0.12), inset -2px -2px 6px rgba(255,255,255,0.5);
+        }
+        /* 统一按钮风格 - 全部新拟态灰色，无绿色 */
         .btn {
             border: none;
             border-radius: 40px;
@@ -142,10 +134,28 @@
             gap: 8px;
             width: 100%;
         }
-        .btn:active { transform: scale(0.97); box-shadow: inset 3px 3px 6px rgba(0,0,0,0.15), inset -2px -2px 5px rgba(255,255,255,0.5); }
-        .btn-primary { background: linear-gradient(180deg, #2c7a4a, #1e5a3a); color: white; }
-        .btn-sm { width: auto; padding: 6px 16px; font-size: 0.75rem; }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+        .btn:active {
+            transform: scale(0.97);
+            box-shadow: inset 3px 3px 8px rgba(0,0,0,0.15), inset -2px -2px 5px rgba(255,255,255,0.5);
+        }
+        /* 主要操作按钮：保持统一灰色，不加绿色 */
+        .btn-primary {
+            background: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 100%);
+            color: #2c3e2f;
+            font-weight: 700;
+        }
+        .btn-sm {
+            width: auto;
+            padding: 6px 16px;
+            font-size: 0.75rem;
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
         .search-box {
             flex: 2;
             background: var(--bg-start);
@@ -180,32 +190,39 @@
             border-radius: 28px;
             overflow: hidden;
             box-shadow: var(--shadow-outer);
+            transition: transform 0.2s, box-shadow 0.2s;
             animation: cardFadeIn 0.25s ease-out;
         }
         @keyframes cardFadeIn {
             from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .repo-card.removing { animation: cardFadeOut 0.2s ease-in forwards; }
+        .repo-card.removing {
+            animation: cardFadeOut 0.2s ease-in forwards;
+        }
         @keyframes cardFadeOut {
             to { opacity: 0; transform: translateX(20px); }
         }
+        .repo-card:hover { transform: translateY(-2px); }
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 1.2rem 0.6rem;
+            padding: 1rem 1.2rem 0.6rem 1.2rem;
         }
         .repo-title a {
             font-size: 1.1rem;
             font-weight: 800;
             color: #1e40af;
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        body.dark .repo-title a { color: #7aa9ff; }
         .card-actions { display: flex; gap: 8px; }
         .icon-btn {
-            width: 32px; height: 32px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             border: none;
             background: var(--btn-bg);
@@ -216,7 +233,7 @@
             align-items: center;
             justify-content: center;
         }
-        .icon-btn:active { transform: scale(0.92); }
+        .icon-btn:active { transform: scale(0.92); box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1); }
         .card-desc {
             padding: 0.6rem 1.2rem 0.8rem;
             font-size: 0.8rem;
@@ -227,6 +244,7 @@
         .card-footer { padding: 0.7rem 1.2rem; display: flex; justify-content: flex-end; gap: 8px; }
         .inline-edit-form {
             padding: 1rem 1.2rem;
+            background: rgba(0,0,0,0.02);
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -269,11 +287,16 @@
             border-radius: 32px;
             color: var(--text-secondary);
         }
-        .empty-illustration { font-size: 4rem; margin-bottom: 12px; opacity: 0.7; }
+        .empty-illustration {
+            font-size: 4rem;
+            margin-bottom: 12px;
+            opacity: 0.7;
+        }
+        /* 菜单与模态框 */
         .menu-overlay, .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(40,40,40,0.5);
             backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
@@ -343,7 +366,6 @@
     <div class="title-card">
         <div class="title-left"><span class="app-icon">📘</span><span class="app-title">GitHub 链接管家</span></div>
         <div class="title-actions">
-            <button class="header-btn" id="themeToggleBtn">🌙</button>
             <button class="header-btn" id="menuBtn">☰</button>
         </div>
     </div>
@@ -361,7 +383,7 @@
     </div>
 
     <div id="linksContainer" class="links-grid"></div>
-    <footer>💾 自动保存 | 深色模式 | 导入(覆盖/合并) | 二维码分享 | 严格校验</footer>
+    <footer>💾 自动保存 | 导入(覆盖/合并) | 二维码分享 | 严格校验</footer>
 </div>
 
 <div class="menu-overlay" id="menuOverlay"><div class="menu-popup"><button class="btn" id="exportNotesBtn">📋 导出笔记</button><button class="btn" id="exportBackupBtn">💾 导出备份</button><button class="btn" id="importBtn">📂 导入数据</button><button class="btn btn-danger" id="clearAllBtn">⚠️ 清理所有数据</button><button class="btn" id="menuCloseBtn">关闭</button></div></div>
@@ -381,7 +403,7 @@
 // ======================= 完整模块化重构 =======================
 // Storage 模块
 const Storage = {
-    key: 'github_links_perfect_v2',
+    key: 'github_links_perfect_v3',
     save(data) {
         try {
             localStorage.setItem(this.key, JSON.stringify(data));
@@ -404,7 +426,7 @@ const Storage = {
     }
 };
 
-// Repository 模块（数据层）
+// Repository 模块
 const Repository = {
     data: [],
     init() { this.data = Storage.load(); },
@@ -457,7 +479,7 @@ const Repository = {
     }
 };
 
-// Validator 模块（严格校验）
+// Validator 模块
 const Validator = {
     isValidGitHubUrl(urlString) {
         try {
@@ -508,7 +530,7 @@ const Validator = {
     }
 };
 
-// 原生二维码生成器（无外部依赖）
+// 原生二维码生成器
 const QRGenerator = {
     generateCanvas(text, size = 200) {
         const canvas = document.createElement('canvas');
@@ -520,7 +542,6 @@ const QRGenerator = {
         ctx.fillRect(0, 0, size, size);
         ctx.fillStyle = '#000000';
         
-        // 基于文本生成简单的二维码样式图案
         let hash = 0;
         for (let i = 0; i < text.length; i++) {
             hash = ((hash << 5) - hash) + text.charCodeAt(i);
@@ -537,7 +558,6 @@ const QRGenerator = {
             }
         }
         
-        // 添加三个定位图案
         ctx.fillStyle = '#000000';
         for (let pos of [[0,0], [size-28,0], [0,size-28]]) {
             ctx.fillRect(pos[0], pos[1], 28, 28);
@@ -556,7 +576,7 @@ const QRGenerator = {
     }
 };
 
-// UI 模块（使用事件委托，单次绑定）
+// UI 模块
 let currentEditId = null;
 let editCache = { name: '', url: '', desc: '' };
 let hasUnsavedChanges = false;
@@ -633,7 +653,6 @@ function render() {
 
 function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-// 编辑状态管理
 function startEdit(id) {
     const repo = Repository.getAll().find(r => r.id == id);
     if (!repo) return;
@@ -682,7 +701,7 @@ function onEditInputChange() {
     }
 }
 
-// 事件委托（只绑定一次）
+// 事件委托（单次绑定）
 const container = document.getElementById('linksContainer');
 container.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
@@ -716,7 +735,6 @@ container.addEventListener('click', (e) => {
     else if (action === 'saveEdit') { saveEdit(id); }
 });
 
-// 监听编辑输入变化
 container.addEventListener('input', (e) => {
     if (e.target.closest('.inline-edit-form')) onEditInputChange();
 });
@@ -739,7 +757,6 @@ function handleAdd() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// 导出/导入/清理功能
 function showSkeleton() {
     const container = document.getElementById('linksContainer');
     container.innerHTML = `<div class="skeleton-card"><div class="skeleton-line" style="width:60%"></div><div class="skeleton-line" style="width:90%"></div><div class="skeleton-line" style="width:40%"></div></div>`;
@@ -805,14 +822,6 @@ function executeClear() {
         document.getElementById('clearConfirmOverlay').classList.remove('show');
     } else { showToast('输入文字不匹配，操作取消'); }
 }
-function initTheme() {
-    const isDark = localStorage.getItem('darkMode') === 'true';
-    if (isDark) document.body.classList.add('dark');
-    document.getElementById('themeToggleBtn').onclick = () => {
-        document.body.classList.toggle('dark');
-        localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-    };
-}
 
 let searchTimeout;
 document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -848,11 +857,10 @@ showSkeleton();
 Repository.init();
 setTimeout(() => {
     bindGlobalEvents();
-    initTheme();
     render();
 }, 80);
 
-// ======================= Service Worker 注册 =======================
+// Service Worker 注册
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then(reg => {
