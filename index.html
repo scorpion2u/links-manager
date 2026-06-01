@@ -101,6 +101,14 @@
             overflow: hidden;
             box-shadow: var(--shadow-outer);
             margin-bottom: 16px;
+            transition: box-shadow 0.2s;
+        }
+        .category-card.dragging {
+            opacity: 0.4;
+            cursor: grabbing;
+        }
+        .category-card.drag-over {
+            box-shadow: 0 0 0 2px #3b82f6, var(--shadow-outer);
         }
         .category-header {
             display: flex;
@@ -113,8 +121,9 @@
             cursor: grab;
             font-size: 1.1rem;
             opacity: 0.4;
-            padding: 0 4px;
+            padding: 8px 4px;
             user-select: none;
+            touch-action: none;
         }
         .drag-handle:active { cursor: grabbing; }
         .collapse-btn {
@@ -175,13 +184,21 @@
             padding: 10px 14px;
             gap: 8px;
             box-shadow: var(--shadow-inner);
+            transition: box-shadow 0.2s;
+        }
+        .link-item.dragging {
+            opacity: 0.4;
+        }
+        .link-item.drag-over {
+            box-shadow: 0 0 0 2px #3b82f6, var(--shadow-inner);
         }
         .link-drag-handle {
             cursor: grab;
             font-size: 0.9rem;
             opacity: 0.3;
-            padding: 0 4px;
+            padding: 8px 4px;
             user-select: none;
+            touch-action: none;
         }
         .link-info {
             flex: 1;
@@ -347,7 +364,7 @@
     <div id="categoriesContainer" class="categories-container"></div>
 
     <div class="add-category-btn" id="addCategoryBtn">➕ 添加新分类</div>
-    <footer>拖拽 ⋮⋮ 可排序 | 点击 ▼ 折叠分类 | 支持任何链接</footer>
+    <footer>长按拖拽 ⋮⋮ 可排序 | 点击 ▼ 折叠分类 | 支持任何链接</footer>
 </div>
 
 <!-- 菜单弹窗 -->
@@ -431,7 +448,7 @@
 <script>
 // ======================= 数据模块 =======================
 const Storage = {
-    key: 'category_link_manager_v4',
+    key: 'category_link_manager_v5',
     save(data) {
         try { localStorage.setItem(this.key, JSON.stringify(data)); return true; }
         catch(e) { if(e.name === 'QuotaExceededError') alert('存储空间已满！请导出备份后清理。'); return false; }
@@ -539,7 +556,7 @@ function render() {
         const linkCount = cat.links.length;
         html += `<div class="category-card ${cat.collapsed ? 'collapsed' : ''}" data-category-id="${cat.id}">
             <div class="category-header">
-                <span class="drag-handle" data-drag="category">⋮⋮</span>
+                <span class="drag-handle" data-drag-type="category" data-category-id="${cat.id}">⋮⋮</span>
                 <span class="collapse-btn" data-toggle-category="${cat.id}">▼</span>
                 <span class="category-title">📁 ${escapeHtml(cat.name)}</span>
                 <span class="category-stats">${linkCount}个链接</span>
@@ -551,8 +568,8 @@ function render() {
             <div class="category-body">
                 <div class="links-list" data-category-id="${cat.id}">`;
         for (const link of cat.links) {
-            html += `<div class="link-item" data-link-id="${link.id}">
-                <span class="link-drag-handle" data-drag="link">⋮⋮</span>
+            html += `<div class="link-item" data-link-id="${link.id}" data-category-id="${cat.id}">
+                <span class="link-drag-handle" data-drag-type="link" data-link-id="${link.id}" data-category-id="${cat.id}">⋮⋮</span>
                 <div class="link-info">
                     <div class="link-name">${escapeHtml(link.name)}</div>
                     <div class="link-url">${escapeHtml(link.url)}</div>
@@ -570,6 +587,7 @@ function render() {
     }
     container.innerHTML = html;
     bindEvents();
+    initDragAndDrop();
 }
 
 function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
@@ -598,71 +616,171 @@ function bindEvents() {
     });
 }
 
-// 拖拽排序 - 使用 HTML5 Drag & Drop API 修复
-let dragSrc = null;
-document.addEventListener('dragstart', (e) => {
-    const dragEl = e.target.closest('[data-drag]');
-    if (dragEl) {
-        dragSrc = dragEl;
-        e.dataTransfer.setData('text/plain', 'drag');
-        e.dataTransfer.effectAllowed = 'move';
-        // 让拖拽时显示一个半透明效果
-        dragEl.style.opacity = '0.5';
-    }
-});
-document.addEventListener('dragend', (e) => {
-    if (dragSrc) {
-        dragSrc.style.opacity = '';
-        dragSrc = null;
-    }
-});
-document.addEventListener('dragover', (e) => {
-    const target = e.target.closest('.category-card, .link-item');
-    if (target && dragSrc) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    }
-});
-document.addEventListener('drop', (e) => {
+// 拖拽排序 - 使用触摸事件，支持移动端和PC端
+let dragState = {
+    isDragging: false,
+    dragType: null, // 'category' or 'link'
+    dragElement: null,
+    dragId: null,
+    dragCategoryId: null,
+    startY: 0,
+    targetElement: null,
+    targetId: null,
+    targetCategoryId: null
+};
+
+function initDragAndDrop() {
+    // 分类拖拽手柄
+    document.querySelectorAll('.drag-handle').forEach(handle => {
+        handle.addEventListener('touchstart', onDragStart, { passive: false });
+        handle.addEventListener('mousedown', onDragStart);
+    });
+    
+    // 链接拖拽手柄
+    document.querySelectorAll('.link-drag-handle').forEach(handle => {
+        handle.addEventListener('touchstart', onDragStart, { passive: false });
+        handle.addEventListener('mousedown', onDragStart);
+    });
+}
+
+function onDragStart(e) {
     e.preventDefault();
-    if (!dragSrc) return;
+    const handle = e.target.closest('[data-drag-type]');
+    if (!handle) return;
     
-    const targetCat = e.target.closest('.category-card');
-    const targetLink = e.target.closest('.link-item');
+    dragState.dragType = handle.dataset.dragType;
+    dragState.dragId = dragState.dragType === 'category' ? handle.dataset.categoryId : handle.dataset.linkId;
+    dragState.dragCategoryId = handle.dataset.categoryId;
+    dragState.dragElement = handle.closest(dragState.dragType === 'category' ? '.category-card' : '.link-item');
     
-    // 分类拖拽
-    if (dragSrc.dataset.drag === 'category' && targetCat && targetCat.classList.contains('category-card')) {
-        const cats = [...AppData.categories];
-        const fromIdx = cats.findIndex(c => c.id == dragSrc.closest('.category-card').dataset.categoryId);
-        const toIdx = cats.findIndex(c => c.id == targetCat.dataset.categoryId);
-        if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
-            const [moved] = cats.splice(fromIdx, 1);
-            cats.splice(toIdx, 0, moved);
-            AppData.reorderCategories(cats);
-            render();
-        }
+    if (!dragState.dragElement) return;
+    
+    dragState.isDragging = true;
+    dragState.dragElement.classList.add('dragging');
+    
+    const startPoint = e.touches ? e.touches[0].clientY : e.clientY;
+    dragState.startY = startPoint;
+    
+    // 绑定移动和结束事件
+    if (e.type === 'touchstart') {
+        document.addEventListener('touchmove', onDragMove);
+        document.addEventListener('touchend', onDragEnd);
+    } else {
+        document.addEventListener('mousemove', onDragMove);
+        document.addEventListener('mouseup', onDragEnd);
     }
-    // 链接拖拽
-    else if (dragSrc.dataset.drag === 'link' && targetLink) {
-        const parentCat = dragSrc.closest('.category-card');
-        const targetParentCat = targetLink.closest('.category-card');
-        if (parentCat && targetParentCat && parentCat.dataset.categoryId === targetParentCat.dataset.categoryId) {
-            const catId = parseInt(parentCat.dataset.categoryId);
-            const cat = AppData.categories.find(c => c.id === catId);
-            const links = [...cat.links];
-            const fromIdx = links.findIndex(l => l.id == dragSrc.closest('.link-item').dataset.linkId);
-            const toIdx = links.findIndex(l => l.id == targetLink.dataset.linkId);
-            if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
-                const [moved] = links.splice(fromIdx, 1);
-                links.splice(toIdx, 0, moved);
-                AppData.reorderLinks(catId, links);
-                render();
+}
+
+function onDragMove(e) {
+    if (!dragState.isDragging) return;
+    e.preventDefault();
+    
+    const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+    const dragElement = dragState.dragElement;
+    
+    // 移动拖拽元素的视觉效果
+    if (dragElement) {
+        const deltaY = currentY - dragState.startY;
+        dragElement.style.transform = `translateY(${deltaY}px)`;
+        dragElement.style.transition = 'none';
+    }
+    
+    // 查找当前悬停的目标元素
+    const elemUnderCursor = document.elementsFromPoint(
+        e.touches ? e.touches[0].clientX : e.clientX,
+        currentY
+    );
+    
+    let target = null;
+    for (let el of elemUnderCursor) {
+        if (dragState.dragType === 'category' && el.classList && el.classList.contains('category-card') && el !== dragState.dragElement) {
+            target = el;
+            break;
+        }
+        if (dragState.dragType === 'link' && el.classList && el.classList.contains('link-item') && el !== dragState.dragElement) {
+            const targetCatId = el.dataset.categoryId;
+            if (targetCatId === dragState.dragCategoryId) {
+                target = el;
+                break;
             }
         }
     }
-    dragSrc.style.opacity = '';
-    dragSrc = null;
-});
+    
+    // 移除所有高亮
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    if (target) {
+        target.classList.add('drag-over');
+        dragState.targetElement = target;
+        dragState.targetId = dragState.dragType === 'category' ? target.dataset.categoryId : target.dataset.linkId;
+        dragState.targetCategoryId = target.dataset.categoryId;
+    } else {
+        dragState.targetElement = null;
+        dragState.targetId = null;
+        dragState.targetCategoryId = null;
+    }
+}
+
+function onDragEnd(e) {
+    if (!dragState.isDragging) return;
+    
+    // 恢复样式
+    if (dragState.dragElement) {
+        dragState.dragElement.style.transform = '';
+        dragState.dragElement.style.transition = '';
+        dragState.dragElement.classList.remove('dragging');
+    }
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    
+    // 执行排序
+    if (dragState.targetElement && dragState.targetId) {
+        if (dragState.dragType === 'category') {
+            const categories = [...AppData.categories];
+            const fromIdx = categories.findIndex(c => c.id == dragState.dragId);
+            const toIdx = categories.findIndex(c => c.id == dragState.targetId);
+            if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+                const [moved] = categories.splice(fromIdx, 1);
+                categories.splice(toIdx, 0, moved);
+                AppData.reorderCategories(categories);
+                render();
+                showToast('分类顺序已更新');
+            }
+        } else if (dragState.dragType === 'link' && dragState.dragCategoryId === dragState.targetCategoryId) {
+            const catId = parseInt(dragState.dragCategoryId);
+            const cat = AppData.categories.find(c => c.id === catId);
+            if (cat) {
+                const links = [...cat.links];
+                const fromIdx = links.findIndex(l => l.id == dragState.dragId);
+                const toIdx = links.findIndex(l => l.id == dragState.targetId);
+                if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+                    const [moved] = links.splice(fromIdx, 1);
+                    links.splice(toIdx, 0, moved);
+                    AppData.reorderLinks(catId, links);
+                    render();
+                    showToast('链接顺序已更新');
+                }
+            }
+        }
+    }
+    
+    // 重置拖拽状态
+    dragState = {
+        isDragging: false,
+        dragType: null,
+        dragElement: null,
+        dragId: null,
+        dragCategoryId: null,
+        startY: 0,
+        targetElement: null,
+        targetId: null,
+        targetCategoryId: null
+    };
+    
+    // 移除事件监听
+    document.removeEventListener('touchmove', onDragMove);
+    document.removeEventListener('touchend', onDragEnd);
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragEnd);
+}
 
 // 其他功能
 function generateNotes() {
